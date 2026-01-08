@@ -37,3 +37,19 @@ Carthage/Build/
 *.xcuserstate
 *.xcuserdatad
 xcuserdata/
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+/tmp/
+
+# Generated files
+*.xcodeproj
+*.xcworkspace
+Podfile.lock
+
+# Local SwiftTerm (deprecated)
+SwiftTermLocal/

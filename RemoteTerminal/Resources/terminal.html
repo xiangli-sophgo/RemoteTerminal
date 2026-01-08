@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Terminal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1e1e1e;
+        }
+        #terminal {
+            width: 100%;
+            height: 100%;
+        }
+        .xterm {
+            padding: 8px;
+        }
+        .xterm-viewport {
+            overflow-y: auto !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.min.js"></script>
+
+    <script>
+        // 初始化终端
+        const term = new Terminal({
+            cursorBlink: true,
+            cursorStyle: 'block',
+            fontSize: 14,
+            fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+            theme: {
+                background: '#1e1e1e',
+                foreground: '#d4d4d4',
+                cursor: '#ffffff',
+                cursorAccent: '#1e1e1e',
+                selection: 'rgba(255, 255, 255, 0.3)',
+                black: '#000000',
+                red: '#cd3131',
+                green: '#0dbc79',
+                yellow: '#e5e510',
+                blue: '#2472c8',
+                magenta: '#bc3fbc',
+                cyan: '#11a8cd',
+                white: '#e5e5e5',
+                brightBlack: '#666666',
+                brightRed: '#f14c4c',
+                brightGreen: '#23d18b',
+                brightYellow: '#f5f543',
+                brightBlue: '#3b8eea',
+                brightMagenta: '#d670d6',
+                brightCyan: '#29b8db',
+                brightWhite: '#ffffff'
+            },
+            allowTransparency: false,
+            scrollback: 10000,
+            convertEol: true
+        });
+
+        // 加载插件
+        const fitAddon = new FitAddon.FitAddon();
+        const webLinksAddon = new WebLinksAddon.WebLinksAddon();
+
+        term.loadAddon(fitAddon);
+        term.loadAddon(webLinksAddon);
+
+        // 打开终端
+        term.open(document.getElementById('terminal'));
+        fitAddon.fit();
+
+        // 监听窗口大小变化
+        window.addEventListener('resize', () => {
+            fitAddon.fit();
+            notifySizeChange();
+        });
+
+        // 初始调整大小
+        setTimeout(() => {
+            fitAddon.fit();
+            notifySizeChange();
+        }, 100);
+
+        // 监听用户输入
+        term.onData((data) => {
+            // 发送到 Swift
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.terminalInput) {
+                window.webkit.messageHandlers.terminalInput.postMessage(data);
+            }
+        });
+
+        // 通知 Swift 终端大小变化
+        function notifySizeChange() {
+            const cols = term.cols;
+            const rows = term.rows;
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.terminalSize) {
+                window.webkit.messageHandlers.terminalSize.postMessage({ cols: cols, rows: rows });
+            }
+        }
+
+        // 供 Swift 调用的方法
+        function writeToTerminal(data) {
+            term.write(data);
+        }
+
+        function clearTerminal() {
+            term.clear();
+        }
+
+        function focusTerminal() {
+            term.focus();
+        }
+
+        function resizeTerminal() {
+            fitAddon.fit();
+            notifySizeChange();
+        }
+
+        // 通知 Swift 终端已准备好
+        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.terminalReady) {
+            window.webkit.messageHandlers.terminalReady.postMessage('ready');
+        }
+    </script>
+</body>
+</html>

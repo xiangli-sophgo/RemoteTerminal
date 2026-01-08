@@ -3,7 +3,7 @@ platform :ios, '17.0'
 target 'RemoteTerminal' do
   use_frameworks!
 
-  pod 'NMSSH'
+  # NMSSH 已移除，改用 SwiftNIO SSH (通过 SPM)
 end
 
 post_install do |installer|
