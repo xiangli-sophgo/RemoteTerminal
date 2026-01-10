@@ -143,17 +143,19 @@ final class TerminalSession: ObservableObject {
             return
         }
 
-        // 先清屏，再执行 tmux 命令
-        sshService.write("clear\r")
+        // 执行 tmux 命令
         sshService.write(cmd)
+
+        // 进入 tmux 后自动隐藏状态栏
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.sshService.write("tmux set status off 2>/dev/null\r")
+        }
     }
 
     /// 跳过 tmux 选择，直接使用终端
     func skipTmuxSession() {
         showTmuxSessionPicker = false
         tmuxListPending = false
-        // 清屏，清除之前的 tmux 检测命令输出
-        sshService.write("clear\r")
     }
 
     /// 处理接收到的数据

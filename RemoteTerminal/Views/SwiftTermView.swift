@@ -29,6 +29,9 @@ struct SwiftTermView: UIViewRepresentable {
         terminalView.nativeForegroundColor = UIColor(red: 0.831, green: 0.831, blue: 0.831, alpha: 1)
         terminalView.nativeBackgroundColor = UIColor(red: 0.118, green: 0.118, blue: 0.118, alpha: 1)
 
+        // 禁用 SwiftTerm 自带的快捷键栏（使用我们自己的 SpecialKeysBar）
+        terminalView.inputAccessoryView = nil
+
         context.coordinator.terminalView = terminalView
 
         DispatchQueue.main.async {

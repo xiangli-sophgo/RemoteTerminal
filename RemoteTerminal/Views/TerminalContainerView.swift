@@ -6,6 +6,7 @@ struct TerminalContainerView: View {
     @StateObject private var session: TerminalSession
     @State private var terminalView: SwiftTermTerminalView?
     @State private var isTerminalReady = false
+    @State private var isScrollModeEnabled = false  // false = 可滚动查看历史
 
     init(connection: SSHConnection) {
         _session = StateObject(wrappedValue: TerminalSession(connection: connection))
@@ -19,7 +20,12 @@ struct TerminalContainerView: View {
                 SpecialKeysBar(
                     onKeyPress: { escapeSequence in
                         session.sshService.write(escapeSequence)
-                    }
+                    },
+                    onToggleScrollMode: {
+                        isScrollModeEnabled.toggle()
+                        terminalView?.allowMouseReporting = isScrollModeEnabled
+                    },
+                    isScrollModeEnabled: $isScrollModeEnabled
                 )
             }
             .navigationTitle(session.connection.displayName)

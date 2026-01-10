@@ -2,9 +2,19 @@ import SwiftUI
 
 struct SpecialKeysBar: View {
     let onKeyPress: (String) -> Void
+    var onToggleScrollMode: (() -> Void)? = nil
+    @Binding var isScrollModeEnabled: Bool
 
     @ObservedObject private var settings = KeyBarSettings.shared
     @State private var showSettings = false
+
+    init(onKeyPress: @escaping (String) -> Void,
+         onToggleScrollMode: (() -> Void)? = nil,
+         isScrollModeEnabled: Binding<Bool> = .constant(true)) {
+        self.onKeyPress = onKeyPress
+        self.onToggleScrollMode = onToggleScrollMode
+        self._isScrollModeEnabled = isScrollModeEnabled
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -21,11 +31,27 @@ struct SpecialKeysBar: View {
                 .padding(.vertical, 6)
             }
 
-            // 右侧设置按钮
+            // 右侧功能按钮
             HStack(spacing: 4) {
                 Divider()
                     .frame(height: 28)
 
+                // 滚动模式切换按钮
+                if onToggleScrollMode != nil {
+                    Button {
+                        onToggleScrollMode?()
+                    } label: {
+                        Image(systemName: isScrollModeEnabled ? "hand.draw.fill" : "hand.draw")
+                            .font(.system(size: 16))
+                            .foregroundStyle(isScrollModeEnabled ? .blue : .primary)
+                            .frame(width: 36, height: 36)
+                            .background(Color(uiColor: .tertiarySystemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                // 设置按钮
                 Button {
                     showSettings = true
                 } label: {
