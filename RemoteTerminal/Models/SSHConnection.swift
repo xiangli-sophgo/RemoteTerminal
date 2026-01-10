@@ -6,6 +6,25 @@ enum AuthType: String, Codable {
     case publicKey
 }
 
+// MARK: - tmux 相关类型
+
+/// tmux 会话信息
+struct TmuxSessionInfo: Identifiable {
+    let id = UUID()
+    let name: String
+    let windows: Int
+    let created: String
+    let attached: Bool
+}
+
+/// 用户选择的 tmux 操作
+enum TmuxAction {
+    case auto                   // 自动（附加或新建）
+    case newSession(String)     // 强制新建，带会话名称
+    case attach(String)         // 附加到指定会话
+    case delete(String)         // 删除指定会话
+}
+
 @Model
 final class SSHConnection {
     var id: UUID
@@ -16,6 +35,10 @@ final class SSHConnection {
     var authTypeRaw: String
     var createdAt: Date
     var lastConnectedAt: Date?
+
+    // tmux 会话管理
+    var enableTmux: Bool = false
+    var tmuxSessionName: String = ""
 
     var authType: AuthType {
         get { AuthType(rawValue: authTypeRaw) ?? .password }
@@ -44,5 +67,16 @@ final class SSHConnection {
 
     var connectionString: String {
         "\(username)@\(host):\(port)"
+    }
+
+    /// 获取有效的 tmux 会话名称
+    var effectiveTmuxSessionName: String {
+        if !tmuxSessionName.isEmpty {
+            return tmuxSessionName.replacingOccurrences(of: " ", with: "_")
+        }
+        if !name.isEmpty {
+            return name.replacingOccurrences(of: " ", with: "_")
+        }
+        return "default"
     }
 }

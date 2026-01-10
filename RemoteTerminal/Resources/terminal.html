@@ -37,6 +37,9 @@
     <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.min.js"></script>
 
     <script>
+        // 检测是否为 iOS
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
         // 初始化终端
         const term = new Terminal({
             cursorBlink: true,
@@ -70,6 +73,9 @@
             scrollback: 10000,
             convertEol: true
         });
+
+        // iOS IME 输入状态跟踪
+        let isComposing = false;
 
         // 加载插件
         const fitAddon = new FitAddon.FitAddon();

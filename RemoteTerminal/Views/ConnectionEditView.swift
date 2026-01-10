@@ -42,6 +42,10 @@ struct ConnectionEditView: View {
     @State private var showingError = false
     @State private var errorMessage = ""
 
+    // tmux 配置
+    @State private var enableTmux: Bool = false
+    @State private var tmuxSessionName: String = ""
+
     var body: some View {
         NavigationStack {
             Form {
@@ -69,6 +73,20 @@ struct ConnectionEditView: View {
                         .textContentType(.password)
 
                     Toggle("保存密码到钥匙串", isOn: $savePassword)
+                }
+
+                Section("会话管理") {
+                    Toggle("启用 tmux 会话", isOn: $enableTmux)
+
+                    if enableTmux {
+                        TextField("会话名称（可选）", text: $tmuxSessionName)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+
+                        Text("启用后重连可恢复之前的工作状态（目录、环境变量等）")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 Section {
@@ -122,6 +140,10 @@ struct ConnectionEditView: View {
             password = savedPassword
             savePassword = true
         }
+
+        // 加载 tmux 设置
+        enableTmux = connection.enableTmux
+        tmuxSessionName = connection.tmuxSessionName
     }
 
     private func saveConnection() {
@@ -139,6 +161,8 @@ struct ConnectionEditView: View {
             existing.host = trimmedHost
             existing.port = portNumber
             existing.username = trimmedUsername
+            existing.enableTmux = enableTmux
+            existing.tmuxSessionName = tmuxSessionName
 
             if savePassword && !password.isEmpty {
                 try? KeychainHelper.shared.savePassword(password, for: existing.id)
@@ -152,6 +176,8 @@ struct ConnectionEditView: View {
                 port: portNumber,
                 username: trimmedUsername
             )
+            connection.enableTmux = enableTmux
+            connection.tmuxSessionName = tmuxSessionName
             modelContext.insert(connection)
 
             if savePassword && !password.isEmpty {
