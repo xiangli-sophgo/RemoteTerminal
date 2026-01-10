@@ -145,6 +145,10 @@ final class SSHService: ObservableObject {
         channel.writeAndFlush(dataPayload, promise: nil)
     }
 
+    func writeData(_ data: Data) {
+        write(data)
+    }
+
 
     func sendWindowChange(cols: Int, rows: Int) {
         guard let channel = sshChannel else { return }

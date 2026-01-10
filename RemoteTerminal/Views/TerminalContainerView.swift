@@ -1,10 +1,10 @@
 import SwiftUI
-import WebKit
+import SwiftTerm
 
 struct TerminalContainerView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var session: TerminalSession
-    @State private var webView: WKWebView?
+    @State private var terminalView: SwiftTermTerminalView?
     @State private var isTerminalReady = false
 
     init(connection: SSHConnection) {
@@ -70,9 +70,9 @@ struct TerminalContainerView: View {
             connectingView
 
         case .connected:
-            XtermWebView(
-                onInput: { input in
-                    session.sshService.write(input)
+            SwiftTermView(
+                onInput: { data in
+                    session.sshService.writeData(data)
                 },
                 onSizeChange: { cols, rows in
                     session.sshService.sendWindowChange(cols: cols, rows: rows)
@@ -81,9 +81,9 @@ struct TerminalContainerView: View {
                     isTerminalReady = true
                     setupDataReceiver()
                 },
-                webViewRef: $webView
+                terminalViewRef: $terminalView
             )
-            .background(Color(red: 0.118, green: 0.118, blue: 0.118))
+            .background(SwiftUI.Color(red: 0.118, green: 0.118, blue: 0.118))
 
         case .failed:
             failedView
@@ -93,7 +93,7 @@ struct TerminalContainerView: View {
     private func setupDataReceiver() {
         session.sshService.onDataReceived = { [self] data in
             DispatchQueue.main.async {
-                webView?.writeDataToTerminal(data)
+                terminalView?.writeData(data)
                 // 检测 tmux 安装状态
                 session.handleReceivedData(data)
             }
@@ -111,7 +111,7 @@ struct TerminalContainerView: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(red: 0.118, green: 0.118, blue: 0.118))
+        .background(SwiftUI.Color(red: 0.118, green: 0.118, blue: 0.118))
     }
 
     private var failedView: some View {
@@ -139,7 +139,7 @@ struct TerminalContainerView: View {
             .buttonStyle(.borderedProminent)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(red: 0.118, green: 0.118, blue: 0.118))
+        .background(SwiftUI.Color(red: 0.118, green: 0.118, blue: 0.118))
     }
 
     private var connectionStatusIndicator: some View {
@@ -152,7 +152,7 @@ struct TerminalContainerView: View {
         }
     }
 
-    private var statusColor: Color {
+    private var statusColor: SwiftUI.Color {
         switch session.connectionState {
         case .disconnected: return .gray
         case .connecting: return .yellow
@@ -206,7 +206,7 @@ struct TmuxSessionPickerView: View {
                                 .font(.caption)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(Color.blue.opacity(0.2))
+                                .background(SwiftUI.Color.blue.opacity(0.2))
                                 .foregroundStyle(.blue)
                                 .clipShape(Capsule())
                         }
@@ -249,7 +249,7 @@ struct TmuxSessionPickerView: View {
                                                     .font(.caption2)
                                                     .padding(.horizontal, 6)
                                                     .padding(.vertical, 2)
-                                                    .background(Color.orange.opacity(0.2))
+                                                    .background(SwiftUI.Color.orange.opacity(0.2))
                                                     .foregroundStyle(.orange)
                                                     .clipShape(Capsule())
                                             }
